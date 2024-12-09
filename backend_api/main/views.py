@@ -2,6 +2,7 @@
 from rest_framework import generics, permissions
 from . import serializers
 from . import models
+#from django.http import HttpResponse
 
 # Create your views here.
 class VendorList(generics.ListCreateAPIView): # ListAPIView gets the data as a list
@@ -13,3 +14,7 @@ class VendorDetail(generics.RetrieveUpdateDestroyAPIView): #
     queryset = models.Vendor.objects.all()
     serializer_class = serializers.VendorDetailSerializer
     # permission_classes = [permissions.IsAuthenticated]
+
+
+    # def main (request):
+    #    return HttpResponse("Hello")

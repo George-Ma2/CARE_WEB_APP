@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'main',
+    'main.apps.MainConfig',
+    'frontend.apps.FrontendConfig'
 ]
 
 MIDDLEWARE = [
@@ -82,7 +83,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'CARE_Web_App_DB',
         'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'PASSWORD': 'Pizzalover2003',
         'HOST':'localhost'
     }
 }
