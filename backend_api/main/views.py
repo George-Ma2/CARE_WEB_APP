@@ -1,20 +1,57 @@
 # from django.shortcuts import render
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from . import serializers
+from .serializers import RoomSerializer, CreateRoomSerializer
 from . import models
+from .models import Room
+from rest_framework.views import APIView
+from rest_framework.response import Response
 #from django.http import HttpResponse
 
 # Create your views here.
-class VendorList(generics.ListCreateAPIView): # ListAPIView gets the data as a list
-    queryset = models.Vendor.objects.all()
-    serializer_class = serializers.VendorSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+# class VendorList(generics.ListCreateAPIView): # ListAPIView gets the data as a list
+#     queryset = models.Vendor.objects.all()
+#     serializer_class = serializers.VendorSerializer
+#     # permission_classes = [permissions.IsAuthenticated]
 
-class VendorDetail(generics.RetrieveUpdateDestroyAPIView): # 
-    queryset = models.Vendor.objects.all()
-    serializer_class = serializers.VendorDetailSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+# class VendorDetail(generics.RetrieveUpdateDestroyAPIView): # 
+#     queryset = models.Vendor.objects.all()
+#     serializer_class = serializers.VendorDetailSerializer
+#     # permission_classes = [permissions.IsAuthenticated]
 
 
     # def main (request):
     #    return HttpResponse("Hello")
+
+
+class RoomView(generics.ListAPIView):
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+
+
+class CreateRoomView(APIView):
+    serializer_class = CreateRoomSerializer
+
+    def post(self, request, format=None):
+        if not self.request.session.exists(self.request.session.session_key):
+            self.request.session.create()
+
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            guest_can_pause = serializer.data.get('guest_can_pause')
+            votes_to_skip = serializer.data.get('votes_to_skip')
+            host = self.request.session.session_key
+            queryset = Room.objects.filter(host=host)
+            if queryset.exists():
+                room = queryset[0]
+                room.guest_can_pause = guest_can_pause
+                room.votes_to_skip = votes_to_skip
+                room.save(update_fields=['guest_can_pause', 'votes_to_skip'])
+                return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
+            else:
+                room = Room(host=host, guest_can_pause=guest_can_pause,
+                            votes_to_skip=votes_to_skip)
+                room.save()
+                return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
+
+        return Response({'Bad Request': 'Invalid data...'}, status=status.HTTP_400_BAD_REQUEST)
